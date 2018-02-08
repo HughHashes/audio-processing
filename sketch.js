@@ -1,153 +1,78 @@
-var budi;
+var song;
+var button;
+var skipButton;
+var volumeSlider;
+var rateSlider;
+var panSlider;
+var amp, volume, size;
 
 function preload(){
-    budi = loadImage("hahaha.jpeg");
+    song = loadSound("sounds/notoriousBIG-juicy.mp3")
 }
 
 function setup(){
     createCanvas(600,400);
+    background(0);
+    
+    
+    button = createButton("Juicy - BIG");
+    button.mousePressed(togglePlaying);
+    button.position( 20, 100);
+    
+    skipButton = createButton("Skip");
+    skipButton.mousePressed(skip);
+    skipButton.position( 110, 100);
+    
+    volumeSlider = createSlider(0, 1, 0.5, 0.05);
+    volumeSlider.position(20, 130);
+    
+    rateSlider = createSlider(0.5, 1.5, 1, 0.05);
+    rateSlider.position(20, 160);
+    
+    panSlider = createSlider(-1, 1, 0, 0.05);
+    panSlider.position(20, 190);
+    
+    // song.addCue(3, showSquare);
+    
+    amp = new p5.Amplitude();
     
     
 }
 
 function draw(){
     
-    background(0);
+    background( 0, 0, song.currentTime()*8);
+
+    volume = amp.getLevel();
+    size = map(volume, 0, 1, 50, 200);
+
+    song.setVolume(volumeSlider.value());
+    song.rate(rateSlider.value());
+    song.pan(panSlider.value());
     
-    image(budi, 0, 0);
+    fill(255);
+    rect(width/2, height/2, size, size);
     
-    loadPixels();
-    
-    for(var row = 0; row < height; row++){
-        for(var col = 0; col < width; col++){
-            var startingIndex = (col + row * width) * 4;
-            
-            var r = pixels[startingIndex];
-            var g = pixels[startingIndex + 1];
-            var b = pixels[startingIndex + 2];
-            var a = pixels[startingIndex + 3];
-            
-            if(keyIsPressed){
-                if(key=="1"){
-                    gray_filter(startingIndex, r, g, b, a);
-                }
-                
-                if(key=="2"){
-                    purple_filter(startingIndex, r, g, b, a);
-                }
-                
-                if(key=="3"){
-                    yellow_filter(startingIndex, r, g, b, a);
-                }
-                
-                if(key=="4"){
-                    green_filter(startingIndex, r, g, b, a);
-                }
-                
-                if(key=="5"){
-                    cyan_filter(startingIndex, r, g, b, a);
-                }
-                
-                if(key=="6"){
-                    xray_filter(startingIndex, r, g, b, a);
-                }
-                
-                if(key=="9"){
-                    random_filter(startingIndex, r, g, b, a, col, row);
-                }
-                
-                if(key=="7"){
-                    percent_filter(startingIndex, r, g, b, a);
-                }
-                
-                if(key=="8"){
-                    pretty_purple_filter(startingIndex, r, g, b, a);
-                }
-                
-            }
-            
-    
-        }
+
+}
+
+function togglePlaying(){
+    if(song.isPlaying()){
+        song.pause();
+        button.html("Play Juicy");
     }
-    
-    
-    updatePixels();
-}
-
-function gray_filter(startingIndex, r, g, b, a){
-    pixels[startingIndex + 0] = g;
-    pixels[startingIndex + 1] = g;
-    pixels[startingIndex + 2] = g;
-    pixels[startingIndex + 3] = a;
-}
-
-function purple_filter(startingIndex, r, g, b, a){
-    pixels[startingIndex + 0] = b;
-    pixels[startingIndex + 1] = g;
-    pixels[startingIndex + 2] = r;
-    pixels[startingIndex + 3] = a;
-}
-
-function yellow_filter(startingIndex, r, g, b, a){
-    pixels[startingIndex + 0] = 0;
-    pixels[startingIndex + 1] = 0;
-    pixels[startingIndex + 2] = b;
-    pixels[startingIndex + 3] = a;
-}
-
-function green_filter(startingIndex, r, g, b, a){
-    pixels[startingIndex + 0] = r / 2;
-    pixels[startingIndex + 1] = g / 2;
-    pixels[startingIndex + 2] = b / 2;
-    pixels[startingIndex + 3] = a;
-}
-
-function cyan_filter(startingIndex, r, g, b, a){
-    pixels[startingIndex + 0] = r * 2;
-    pixels[startingIndex + 1] = g * 2;
-    pixels[startingIndex + 2] = b * 2;
-    pixels[startingIndex + 3] = a;
-}
-
-function xray_filter(startingIndex, r, g, b, a){
-    pixels[startingIndex + 0] = 255 - r;
-    pixels[startingIndex + 1] = 255 - g;
-    pixels[startingIndex + 2] = 255 - b;
-    pixels[startingIndex + 3] = a;
-}
-
-function percent_filter(startingIndex, r, g, b, a){
-    if(startingIndex % 20 == 0){
-        pixels[startingIndex + 0] = 0;
-        pixels[startingIndex + 1] = 255;
-        pixels[startingIndex + 2] = 0;
-        pixels[startingIndex + 3] = a;
+    else{
+        song.play();
+        button.html("Pause");
     }
 }
 
-function random_filter(startingIndex, r, g, b, a, col, row){
-    
-    if(startingIndex % 20 == 0){
-        pixels[startingIndex + 0] = r + col * 2;
-        pixels[startingIndex + 1] = g * row - 4;
-        pixels[startingIndex + 2] = b + 10 + row;
-        pixels[startingIndex + 3] = a;
-    }
-    
-    if(startingIndex % 30 == 0){
-        pixels[startingIndex + 0] = r +255;
-        pixels[startingIndex + 1] = g;
-        pixels[startingIndex + 2] = b;
-        pixels[startingIndex + 3] = a;
+function skip(){
+    if(song.isPlaying()){
+        song.jump(song.currentTime() + 5);
     }
 }
 
-function pretty_purple_filter(startingIndex, r, g, b, a){
+function showSquare(){
     
-    var lastPixel = pixels.length - 1;
-    
-    pixels[lastPixel - startingIndex - 3] = r;
-    pixels[lastPixel - startingIndex - 2] = g;
-    pixels[lastPixel - startingIndex - 1] = b;
-    pixels[lastPixel - startingIndex - 0] = a;
 }
